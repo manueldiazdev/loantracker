@@ -11,11 +11,11 @@ from tkinter import *
 #Returning the number as an int.
 def extract_number(line):
     number = re.findall('\d*\.?\d+', line)
-    return number;
+    return number
 
 #Static method that takes in a *.txt file as 'lst' and calculates the amount the person owes, or not.
 #returns a long string of each transaction and total amount owed.
-def loan_calculator(lst):
+def loan_calculator(lst, transaction = ""):
     output = ""
     total_sums = 0.0
     total_paid = 0.0
@@ -24,6 +24,9 @@ def loan_calculator(lst):
         file1 = open(lst, 'r')
     except FileNotFoundError:
         return "File not in system."
+    #if transaction is NOT blank then it will insert anything.
+
+
 
     loan_doc = file1.read()
     # loop till all lines are read
@@ -64,7 +67,7 @@ def loan_calculator(lst):
 
     file1.close()
 
-    return output;
+    return output
 
 
 #main
@@ -74,41 +77,108 @@ def main():
     #static method that reads the input by the user and looks for the file
     #displays string returned by 'loan_calculator()' on text box (GUI).
     def submit():
-        output = ""
+
+        global person
         person = entry.get()
 
-        entry.delete(first= 0, last= len(person) )
+
+        #entry.delete(first= 0, last= len(person) )
+        global loan
         loan = person
         loan.lower()
         loan += "loan.txt"
         text.delete(1.0,END)
         text.insert(INSERT, loan_calculator(loan))
+        if (loan_calculator(loan)) == "File not in system.":
+            button2.config(state= DISABLED)
+            button3.config(state= DISABLED)
+            window.title("Manny Banks (v1.2)")
+
+        else:
+            window.title("Manny Banks (v1.2): " + person)
+            button2.config(state=NORMAL)
+            button3.config(state=NORMAL)
+
+    def paying_back():
+        global person
+        person = entry.get()
+        global loan
+        loan = person
+        loan.lower()
+        loan += "loan.txt"
+        money = ("-"+entry2.get())
+        f = open(loan, 'a')
+        f.write(money + "\n")
+        f.close()
 
 
-    
 
+
+
+    def borrowing():
+        global person
+        person = entry.get()
+        global loan
+        loan = person
+        loan.lower()
+        loan += "loan.txt"
+        money = ("+"+entry2.get())
+        f = open(loan, 'a')
+        f.write(money + "\n")
+        f.close()
+
+
+
+    def create_loan():
+        new_file = entry3.get()
+        entry3.delete(first=0, last=len(entry3.get()))
+        txt_file = open((new_file.lower()+"loan.txt"), "w+")
+        txt_file.close()
+        var3.set(f"Created {new_file}'s loan!\nType another name")
 
 
     window = tkinter.Tk()
-    window.geometry("450x400")
-    window.title("Manny Banks (v1)")
+    window.geometry("500x600")
+    window.title("Manny Banks (v1.2)")
     var = StringVar()
-    var.set("Who's loan do you want to view? [Enter = 'Tony'] ")
+    var.set("Who's loan do you want to view?")
 
     label = Label(window, textvariable = var)
-    button = Button(window, text="Submit", command = submit)
+    button = Button(window, text="Submit/Update", command = submit)
     text = Text(window)
-
     entry = Entry(window)
+
+    #Edit a dept page
+    var2 = StringVar()
+    var2.set("Insert amount paying or borrowing.")
+    label2 = Label(window, textvariable = var2)
+    entry2 = Entry(window)
+
+    button2 = Button(window, text= "paying back", state = DISABLED, command = paying_back)
+    button3 = Button(window, text= "borrowing", state = DISABLED, command = borrowing)
+
+
+    #An option that allows the user to make a text file
+    var3 = StringVar()
+    var3.set("Create a loan file for someone. Type name below.")
+    label3 = Label(window, textvariable = var3)
+    entry3 = Entry(window)
+    button4 = Button(window, text = "Create file", command = create_loan)
 
     text.pack()
     label.pack()
     entry.pack()
     button.pack()
+    label2.pack()
+    entry2.pack()
+    button2.pack()
+    button3.pack()
+    label3.pack()
+    entry3.pack()
+    button4.pack()
 
 
     window.mainloop()
-    again = True
 
 
 
