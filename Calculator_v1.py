@@ -11,7 +11,7 @@ from tkinter import *
 #Returning the number as an int.
 def extract_number(line):
     number = re.findall('\d*\.?\d+', line)
-    return number;
+    return number
 
 #Static method that takes in a *.txt file as 'lst' and calculates the amount the person owes, or not.
 #returns a long string of each transaction and total amount owed.
@@ -64,7 +64,7 @@ def loan_calculator(lst):
 
     file1.close()
 
-    return output;
+    return output
 
 
 #main
