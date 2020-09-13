@@ -93,6 +93,7 @@ class MyWindow():
         """
         Initialize the window interface.
         """
+        self.savelocation = askdirectory() # show an "Open" dialog box and return the path to the selected file
         
         self.current_displayed = "none"
         self.path_saves = ""
@@ -145,8 +146,7 @@ class MyWindow():
         self.button1.bind('<Return>', self.submit)
         self.button2.bind('<Return>',self.loan)
 
-        filename = askdirectory() # show an "Open" dialog box and return the path to the selected file
-        self.savelocation = print(filename)
+        
 
     #Functions for buttons
     def submit(self, event = None):
@@ -158,8 +158,8 @@ class MyWindow():
         self.text1.config(state = NORMAL)
         self.text1.delete(1.0,END)
         list1 = list()
-        self.current_displayed = self.entry1.get().lower()
-        file_found = Tools.extract_file_to_list(f'{self.savelocation}{self.current_displayed.lower()}.txt', list1)
+        self.current_displayed = f'{self.savelocation}/{self.entry1.get().lower()}'
+        file_found = Tools.extract_file_to_list(f'{self.current_displayed.lower()}.txt', list1)
 
         if False == file_found:
             temp = f'File not found. Would you like to create a file for {self.current_displayed}?\nOr try another search.\n'
@@ -197,13 +197,13 @@ class MyWindow():
 
         self.text1.config(state = NORMAL)
         self.text1.delete(1.0, END)
-        if os.path.isfile(f'{self.savelocation}{self.current_displayed}.txt'):
+        if os.path.isfile(f'{self.current_displayed}.txt'):
             self.text1.insert(INSERT, 'File already exist')
             self.button2.config(state = DISABLED)
             self.button3.config(state = DISABLED)
             
         else:    
-            open((f'{self.savelocation}{self.current_displayed}.txt'), "w+")
+            open((f'{self.current_displayed}.txt'), "w+")
             self.text1.insert(INSERT, f'{self.current_displayed}\'s loan file has now been created.')
 
         self.text1.config(state = DISABLED)
@@ -222,7 +222,7 @@ class MyWindow():
             valid_input = False
 
         if valid_input:
-            Tools.add_transaction(f'{self.savelocation}{self.current_displayed}.txt', f'+{self.entry2.get()}')
+            Tools.add_transaction(f'{self.current_displayed}.txt', f'+{self.entry2.get()}')
             self.submit()
         else:
             self.text1.config(state = NORMAL)
@@ -244,7 +244,7 @@ class MyWindow():
             valid_input = False
 
         if valid_input:
-            Tools.add_transaction(f'{self.savelocation}{self.current_displayed}.txt', f'-{self.entry2.get()}')
+            Tools.add_transaction(f'{self.current_displayed}.txt', f'-{self.entry2.get()}')
             self.submit()
         else:
             self.text1.config(state = NORMAL)
