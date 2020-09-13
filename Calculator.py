@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import StringVar
 from tkinter import *
 import os
+from tkinter.filedialog import *
 
 class Tools:
     @staticmethod
@@ -83,7 +84,8 @@ class Tools:
         line = open(file1, 'a')
         line.write(f'{str(num)}\n')
         return
-        
+
+
 
 class MyWindow():
     
@@ -93,7 +95,7 @@ class MyWindow():
         """
         
         self.current_displayed = "none"
-
+        self.path_saves = ""
 
         #Create canvas for text and scrollbar
         self.canvas = Canvas(win)
@@ -101,16 +103,15 @@ class MyWindow():
         self.scrollbar = Scrollbar(self.canvas)
         #Text Display Boxes
         self.text1 = Text(self.canvas, yscrollcommand = self.scrollbar.set)
-        self.text1.insert(INSERT, "Please enter the name of the person that has a loan on file or feel free to make one.")
+        self.text1.insert(INSERT, "Please enter the name of the person that has a loan on file.\nOr feel free to make one.")
         self.text1.config(state = DISABLED)
-        
-        
-        
 
+        
+        
         #Label Boxes
         self.label1 = Label(win, text = "Whos loan do you want to view?")
         self.label2 = Label(win, text = "Are they paying back or borrowing?")
-        self.label3 = Label(win, text = "Currently viewing: No one")
+        self.label3 = Label(win,text = "Currently viewing: No one")
 
         #Entry Boxes
         self.entry1 = Entry(win)
@@ -123,7 +124,7 @@ class MyWindow():
         self.button3 = Button(win, text = "Paying", command = self.paying, state = DISABLED)
         self.button4 = Button(win, text = "Create", command = self.create)
 
-        #self.testb = Button(win, text = 'display_person', command = self.current_person)
+
 
         #Button placements
         self.canvas.pack()
@@ -136,16 +137,16 @@ class MyWindow():
         self.entry2.pack()
         self.button2.pack()
         self.button3.pack()
-        
 
-        #self.testb.pack()
-        
         
 
         #Key binds
         self.entry1.bind('<Return>', self.submit)
         self.button1.bind('<Return>', self.submit)
         self.button2.bind('<Return>',self.loan)
+
+        filename = askdirectory() # show an "Open" dialog box and return the path to the selected file
+        self.savelocation = print(filename)
 
     #Functions for buttons
     def submit(self, event = None):
@@ -158,15 +159,18 @@ class MyWindow():
         self.text1.delete(1.0,END)
         list1 = list()
         self.current_displayed = self.entry1.get().lower()
-        file_found = Tools.extract_file_to_list(f'{self.current_displayed.lower()}.txt', list1)
+        file_found = Tools.extract_file_to_list(f'{self.savelocation}{self.current_displayed.lower()}.txt', list1)
 
         if False == file_found:
-            self.text1.insert(INSERT, 'File not found. Would you like to create a file for them?\nOr try another search.\n')
+            temp = f'File not found. Would you like to create a file for {self.current_displayed}?\nOr try another search.\n'
+            self.text1.insert(INSERT, temp)
+            self.text1.tag_add("start", float(f'1.{temp.find(self.current_displayed)}')
+                                       , float(f'1.{temp.find(self.current_displayed)+len(self.current_displayed)}'))
+            self.text1.tag_config("start", background = 'yellow', underline = True )
             self.button2.config(state = DISABLED)
             self.button3.config(state = DISABLED)
             self.label3.config(text = 'Currently viewing: No one')
             
-
             
         else:
             self.text1.insert(INSERT, file_found)
@@ -174,6 +178,7 @@ class MyWindow():
             self.button3.config(state = NORMAL)
             self.scrollbar.config(command = self.text1.yview)
             self.label3.config(text = f'Currently viewing: {self.current_displayed}')
+            self.text1.yview_moveto('1.0')
             
             
             
@@ -189,16 +194,16 @@ class MyWindow():
         makes a txt file if the file that the user is trying to look for is not found
         """
         self.label3.config(text = 'Currently viewing: No one')
-        self.current_displayed = self.entry1.get()
+
         self.text1.config(state = NORMAL)
         self.text1.delete(1.0, END)
-        if os.path.isfile(f'{self.current_displayed}.txt'):
+        if os.path.isfile(f'{self.savelocation}{self.current_displayed}.txt'):
             self.text1.insert(INSERT, 'File already exist')
             self.button2.config(state = DISABLED)
             self.button3.config(state = DISABLED)
             
         else:    
-            open((f'{self.current_displayed}.txt'), "w+")
+            open((f'{self.savelocation}{self.current_displayed}.txt'), "w+")
             self.text1.insert(INSERT, f'{self.current_displayed}\'s loan file has now been created.')
 
         self.text1.config(state = DISABLED)
@@ -209,13 +214,21 @@ class MyWindow():
         only accessable if a loan is being displayed
         will add a loan to the file that is currently being displayed
         """
-        Tools.add_transaction(f'{self.current_displayed}.txt', f'+{self.entry2.get()}')
+        valid_input = True
+        user_input = self.entry2.get()
+        try:
+            float(user_input)
+        except ValueError:
+            valid_input = False
 
-
-        
-
-
-
+        if valid_input:
+            Tools.add_transaction(f'{self.savelocation}{self.current_displayed}.txt', f'+{self.entry2.get()}')
+            self.submit()
+        else:
+            self.text1.config(state = NORMAL)
+            self.text1.delete(1.0, END)
+            self.text1.insert(INSERT, f'Please use a valid input for {self.current_displayed}\'s loan.')
+            self.text1.config(state = DISABLED)
         return
 
     def paying(self):
@@ -223,13 +236,24 @@ class MyWindow():
         only accessable if a loan is being displayed
         will add a payment to the file that is currently being displayed
         """
-        Tools.add_transaction(f'{self.current_displayed}.txt', f'-{self.entry2.get()}')
+        valid_input = True
+        user_input = self.entry2.get()
+        try:
+            float(user_input)
+        except ValueError:
+            valid_input = False
 
+        if valid_input:
+            Tools.add_transaction(f'{self.savelocation}{self.current_displayed}.txt', f'-{self.entry2.get()}')
+            self.submit()
+        else:
+            self.text1.config(state = NORMAL)
+            self.text1.delete(1.0, END)
+            self.text1.insert(INSERT, f'Please use a valid input for {self.current_displayed}\'s loan.')
+            self.text1.config(state = DISABLED)
         return
-
-    # def current_person(self):
-    #     print(self.current_displayed)
-    #     return
+    
+    
 
     
 
@@ -240,9 +264,13 @@ def main():
         window = Tk()
         mywin = MyWindow(window)
         window.title("Manny Loans")
-        window.geometry("500x500")
+        window.geometry("500x500+450+150")
+
+
+
+
+        window.resizable(False, False)
         window.mainloop()
-        #print(os.path.isfile('tony.txt'))
         return
 
 
