@@ -12,5 +12,5 @@ The .txt file must be named by the person's name and its content should like thi
 -125.23
 +126.64
 '''
-\+ means they are borrowing money
-\- means they are paying that borrowed money off
+'+' means they are borrowing money
+'-' means they are paying that borrowed money off
